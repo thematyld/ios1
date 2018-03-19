@@ -2,14 +2,16 @@
 
 if [ $# -ge 3 ]; then
    echo "Too many arguments!!" >&2
-   exit
+   exit -1
 fi
 
 if [ $# -eq 0 ]; then
    echo "0 params"
-   exit	
+   exit	-1
 fi
 
 if [ $1 == "-m" ]; then
 	echo "ano"
+elif [ $1 == "-d" ]; then
+	echo `date`
 fi
