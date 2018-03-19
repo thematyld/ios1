@@ -1,2 +1,15 @@
+#!/bin/bash
 
-echo "ahojky"
+if [ $# -ge 3 ]; then
+   echo "Too many arguments!!" >&2
+   exit
+fi
+
+if [ $# -eq 0 ]; then
+   echo "0 params"
+   exit	
+fi
+
+if [ $1 == "-m" ]; then
+	echo "ano"
+fi
