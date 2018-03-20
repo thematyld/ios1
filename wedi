@@ -1,19 +1,22 @@
 #!/bin/bash
-
+POSIXLY_CORRECT=yes
 ED=""
+#-------------------------------------WEDI_RC---Variable----------------------#
+
 # If non initialize variable WEDI_RC 
 if [[ -z "${WEDI_RC}" ]]; then 
    echo "WEDI_RC hasn't path..." >&2
    exit -1
-elif [ ! -e "${WEDI_RC}" ]; then
-   echo "WEDI not" >&2
+elif [ ! -e "${WEDI_RC}" ]; then	# If not exist path $WEDI_RC
+   echo "Wedi has set path, but invalid..." >&2
    X="`dirname $WEDI_RC`"
    if [ ! -d $X ]; then   #If file without last word doesn't exist and it's folder
-      echo "WEDI_RC"
       mkdir $X
       touch $X/${WEDI_RC##*/} 
    fi
 fi
+
+#---------------------EDITOR---CONFIGURATION----------------#
 
 if [ ! -z "${EDITOR}" ]; then
   ED=$EDITOR
@@ -23,6 +26,7 @@ else
   ED=vi
 fi
 
+#---------------ARGUMENTS----------------#
 
 if [ $# -ge 3 ]; then
    echo "Too many arguments!!" >&2
