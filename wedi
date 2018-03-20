@@ -1,6 +1,6 @@
 #!/bin/bash
 POSIXLY_CORRECT=yes
-ED=""
+ed=""
 #-------------------------------------WEDI_RC---Variable----------------------#
 
 # If non initialize variable WEDI_RC 
@@ -9,7 +9,7 @@ if [[ -z "${WEDI_RC}" ]]; then
    exit -1
 elif [ ! -e "${WEDI_RC}" ]; then	# If not exist path $WEDI_RC
    echo "Wedi has set path, but invalid..." >&2
-   X="`dirname $WEDI_RC`"
+   x="`dirname $WEDI_RC`"
    if [ ! -d $X ]; then   #If file without last word doesn't exist and it's folder
       mkdir $X
       touch $X/${WEDI_RC##*/} 
@@ -19,14 +19,14 @@ fi
 #---------------------EDITOR---CONFIGURATION----------------#
 
 if [ ! -z "${EDITOR}" ]; then
-  ED=$EDITOR
+  ed=$EDITOR
 elif [ ! -z "$VISUAL" ]; then 
-  ED=$VISUAL
+  ed=$VISUAL
 else
-  ED=vi
+  ed=vi
 fi
 
-#---------------ARGUMENTS----------------#
+#---------------INVALID--ARGUMENTS----------------#
 
 if [ $# -ge 3 ]; then
    echo "Too many arguments!!" >&2
@@ -34,12 +34,19 @@ if [ $# -ge 3 ]; then
 fi
 
 if [ $# -eq 0 ]; then
-   echo "0 params"
+   echo "Nothing parameters found." >&2
    exit	-1
 fi
 
-if [ $1 == "-m" ]; then
-	echo "ano"
-elif [ $1 == "-d" ]; then
-	echo `date`
-fi
+#-------------------
+case ${1} in
+    -m) echo "-m"
+	;;
+    -d) echo "`date`"
+	;;
+     *) file=${1}
+	;;
+esac
+
+[ -d "$file" ] && echo "I'm folder"
+[ -f "$file" ] && echo "I'm file"
