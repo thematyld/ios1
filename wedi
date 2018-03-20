@@ -1,5 +1,6 @@
 #!/bin/bash
 
+ED=""
 # If non initialize variable WEDI_RC 
 if [[ -z "${WEDI_RC}" ]]; then 
    echo "WEDI_RC hasn't path..." >&2
@@ -12,6 +13,14 @@ elif [ ! -e "${WEDI_RC}" ]; then
       mkdir $X
       touch $X/${WEDI_RC##*/} 
    fi
+fi
+
+if [ ! -z "${EDITOR}" ]; then
+  ED=$EDITOR
+elif [ ! -z "$VISUAL" ]; then 
+  ED=$VISUAL
+else
+  ED=vi
 fi
 
 
