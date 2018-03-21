@@ -1,6 +1,8 @@
 #!/bin/bash
 POSIXLY_CORRECT=yes
 ed=""
+file=""
+date=""
 #-------------------------------------WEDI_RC---Variable----------------------#
 
 # If non initialize variable WEDI_RC 
@@ -8,11 +10,13 @@ if [[ -z "${WEDI_RC}" ]]; then
    echo "WEDI_RC hasn't path..." >&2
    exit -1
 elif [ ! -e "${WEDI_RC}" ]; then	# If not exist path $WEDI_RC
-   echo "Wedi has set path, but invalid..." >&2
+   echo "Wedi has set path, but invalid...Creating path.." >&2
    x="`dirname $WEDI_RC`"
-   if [ ! -d $X ]; then   #If file without last word doesn't exist and it's folder
-      mkdir $X
-      touch $X/${WEDI_RC##*/} 
+   if [ ! -d $x ]; then   #If file without last word doesn't exist and it's folder
+      mkdir $x
+      touch $x/${WEDI_RC##*/}
+   else
+      touch $x/${WEDI_RC##*/} 
    fi
 fi
 
@@ -28,7 +32,7 @@ fi
 
 #---------------INVALID--ARGUMENTS----------------#
 
-if [ $# -ge 3 ]; then
+if [ $# -ge 4 ]; then
    echo "Too many arguments!!" >&2
    exit -1
 fi
@@ -39,14 +43,31 @@ if [ $# -eq 0 ]; then
 fi
 
 #-------------------
-case ${1} in
-    -m) echo "-m"
+if [ $# -eq 2 ]; then
+   case ${1} in
+    -m) file=${2}
 	;;
-    -d) echo "`date`"
+    -l) file=${2}
 	;;
-     *) file=${1}
+     *) echo "Invalid parameters. Use --help" >&2
+	exit -1
+	 ;;
+   esac
+elif [ $# -eq 3 ]; then
+   case ${1} in
+    -a) file=$3
 	;;
-esac
+    -b) file=$3
+	;;
+     *) echo "Invalid parameters. Use --help" >&2
+	exit -1
+ 	;;
+   esac
+   date=$2
+else
+   echo "Invalid parameters. Use --help" >&2
+   exit -1	   
+fi
 
 [ -d "$file" ] && echo "I'm folder"
 [ -f "$file" ] && echo "I'm file"
