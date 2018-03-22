@@ -3,12 +3,19 @@ POSIXLY_CORRECT=yes
 ed=""
 file=""
 date=""
+
+
+#---------------Error----------------#
+error () {
+   echo "$1" >&2
+   exit	-1
+}
+
 #-------------------------------------WEDI_RC---Variable----------------------#
 
 # If non initialize variable WEDI_RC 
 if [[ -z "${WEDI_RC}" ]]; then 
-   echo "WEDI_RC hasn't path..." >&2
-   exit -1
+   error "WEDI_RC hasn't path..."
 elif [ ! -e "${WEDI_RC}" ]; then	# If not exist path $WEDI_RC
    echo "Wedi has set path, but invalid...Creating path.." >&2
    x="`dirname $WEDI_RC`"
@@ -30,44 +37,68 @@ else
   ed=vi
 fi
 
-#---------------INVALID--ARGUMENTS----------------#
-
-if [ $# -ge 4 ]; then
-   echo "Too many arguments!!" >&2
-   exit -1
+#------------------Function--Open-file-------
+open_file () { 
+if [ -f $file ]; then
+   $ed $file 
+else
+   error "File didn't exist !!"
 fi
-
-if [ $# -eq 0 ]; then
-   echo "Nothing parameters found." >&2
-   exit	-1
-fi
+}
 
 #-------------------
-if [ $# -eq 2 ]; then
-   case ${1} in
-    -m) file=${2}
+par_EQ1 () {
+  echo "ano"
+  if [ -f ${arg1} ]; then
+     file=${arg1}
+     open_file
+ #  [ -d ${1} ] && 			#EDIT TOD
+  fi
+}
+
+par_EQ2 () {
+   case ${arg1} in
+    -m) file=${arg2}
 	;;
-    -l) file=${2}
+    -l) file=${arg2}
 	;;
-     *) echo "Invalid parameters. Use --help" >&2
-	exit -1
+     *) error "Invalid parameters. Use --help" 
 	 ;;
    esac
-elif [ $# -eq 3 ]; then
-   case ${1} in
-    -a) file=$3
+}
+
+par_EQ3 () {
+   case ${arg1} in
+    -a) file=$arg3
 	;;
-    -b) file=$3
+    -b) file=$arg3
 	;;
-     *) echo "Invalid parameters. Use --help" >&2
-	exit -1
+     *) error "Invalid parameters. Use --help" 
  	;;
    esac
-   date=$2
-else
-   echo "Invalid parameters. Use --help" >&2
-   exit -1	   
-fi
+   date=$arg2
+}
 
+#---------------CASE----------
+case $# in
+    0) error "0 parameters !!"
+	;;
+    1) arg1=${1}
+       par_EQ1
+	;;
+    2) arg1=${1}
+       arg2=${2}
+       par_EQ2
+	;;
+    3) arg1=${1}
+       arg2=${2}
+       arg3=${3}
+       par_EQ3
+	;;
+    *) error "Too many parameters !!"
+	;;
+esac
+#--------------------------------------------
 [ -d "$file" ] && echo "I'm folder"
 [ -f "$file" ] && echo "I'm file"
+
