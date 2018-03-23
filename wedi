@@ -5,28 +5,6 @@ file=""
 date=""
 
 
-#---------------Error----------------#
-error () {
-   echo "$1" >&2
-   exit	-1
-}
-
-#-------------------------------------WEDI_RC---Variable----------------------#
-
-# If non initialize variable WEDI_RC 
-if [[ -z "${WEDI_RC}" ]]; then 
-   error "WEDI_RC hasn't path..."
-elif [ ! -e "${WEDI_RC}" ]; then	# If not exist path $WEDI_RC
-   echo "Wedi has set path, but invalid...Creating path.." >&2
-   x="`dirname $WEDI_RC`"
-   if [ ! -d $x ]; then   #If file without last word doesn't exist and it's folder
-      mkdir $x
-      touch $x/${WEDI_RC##*/}
-   else
-      touch $x/${WEDI_RC##*/} 
-   fi
-fi
-
 #---------------------EDITOR---CONFIGURATION----------------#
 
 if [ ! -z "${EDITOR}" ]; then
@@ -37,30 +15,64 @@ else
   ed=vi
 fi
 
-#------------------Function--Open-file-------
-open_file () { 
-if [ -f $file ]; then
-   $ed $file 
-else
-   error "File didn't exist !!"
-fi
+#---------------Error----------------#
+error () {
+   echo "$1" >&2
+   exit	-1
 }
+
+
+#------------------Function--Open-file-------
+open_file_editor () { 
+   if [ -f $file ]; then
+      $ed $file 
+   else
+      error "File didn't exist !!"
+   fi
+}
+ 
+#---------------Read--From--Text--File--------
+read_textfile () {
+   while IFS='' read -r line ; do
+     items=$(echo $line | tr " " "\n")
+     i=0
+     for item in $items ; do
+	echo $item
+	((i++))
+     done
+   done < "$1"
+
+}
+
+#---------------Write--WEDI_RC---Configuration-------
+write_log () {
+  str="`readlink -f ${1}` `date "+%y%m%d"` 1"
+  if [ -s $1 ]; then
+    echo $str >> $WEDI_RC
+  else
+    echo $str > $WEDI_RC
+  fi
+}
+
+
 
 #-------------------
 par_EQ1 () {
-  echo "ano"
   if [ -f ${arg1} ]; then
      file=${arg1}
-     open_file
- #  [ -d ${1} ] && 			#EDIT TOD
+     open_file_editor
+     write_log $file
+ # elif [ -d ${arg1} ]; then
   fi
 }
 
 par_EQ2 () {
    case ${arg1} in
     -m) file=${arg2}
+	#read_textfile $file
 	;;
     -l) file=${arg2}
+       #	write_log $file
 	;;
      *) error "Invalid parameters. Use --help" 
 	 ;;
@@ -98,6 +110,23 @@ case $# in
     *) error "Too many parameters !!"
 	;;
 esac
+
+#-------------------------------------WEDI_RC---Variable----------------------#
+
+# If non initialize variable WEDI_RC 
+if [[ -z "${WEDI_RC}" ]]; then 
+   error "WEDI_RC hasn't path..."
+elif [ ! -e "${WEDI_RC}" ]; then	# If not exist path $WEDI_RC
+   echo "Wedi has set path, but invalid...Creating path.." >&2
+   x="`dirname $WEDI_RC`"
+   if [ ! -d $x ]; then   #If file without last word doesn't exist and it's folder
+      mkdir $x
+      touch $x/${WEDI_RC##*/}
+   else
+      touch $x/${WEDI_RC##*/} 
+   fi
+fi
+
 #--------------------------------------------
 [ -d "$file" ] && echo "I'm folder"
 [ -f "$file" ] && echo "I'm file"
