@@ -15,6 +15,23 @@ else
   ed=vi
 fi
 
+#-------------------------------------WEDI_RC---Variable----------------------#
+
+# If non initialize variable WEDI_RC 
+if [[ -z "${WEDI_RC}" ]]; then 
+   error "WEDI_RC hasn't path..."
+elif [ ! -e "${WEDI_RC}" ]; then	# If not exist path $WEDI_RC
+   echo "Wedi has set path, but invalid...Creating path.." >&2
+   x="`dirname $WEDI_RC`"
+   if [ ! -d $x ]; then   #If file without last word doesn't exist and it's folder
+      mkdir $x
+      touch $x/${WEDI_RC##*/}
+   else
+      touch $x/${WEDI_RC##*/} 
+   fi
+fi
+
+
 #---------------Error----------------#
 error () {
    echo "$1" >&2
@@ -37,7 +54,7 @@ read_textfile () {
      items=$(echo $line | tr " " "\n")
      i=0
      for item in $items ; do
-	echo $item
+	echo $ite
 	((i++))
      done
    done < "$1"
@@ -45,16 +62,20 @@ read_textfile () {
 }
 
 #---------------Write--WEDI_RC---Configuration-------
-write_log () {
+write_log () {		#if WEDI_RC contains the same file
+if grep -qi `readlink -f ${1}` $WEDI_RC; then
+   echo success
+  # str="`readlink -f ${1}` `date "+%y%m%d"` ${s##* }" 
+else
+  echo "Unsuccess"
   str="`readlink -f ${1}` `date "+%y%m%d"` 1"
-  if [ -s $1 ]; then
+  if [ -s $1 ]; then 		#if $1 is not empty
     echo $str >> $WEDI_RC
   else
     echo $str > $WEDI_RC
   fi
+fi
 }
-
-
 
 #-------------------
 par_EQ1 () {
@@ -69,7 +90,7 @@ par_EQ1 () {
 par_EQ2 () {
    case ${arg1} in
     -m) file=${arg2}
-	#read_textfile $file
+	read_textfile $WEDI_RC
 	;;
     -l) file=${arg2}
        #	write_log $file
@@ -110,22 +131,6 @@ case $# in
     *) error "Too many parameters !!"
 	;;
 esac
-
-#-------------------------------------WEDI_RC---Variable----------------------#
-
-# If non initialize variable WEDI_RC 
-if [[ -z "${WEDI_RC}" ]]; then 
-   error "WEDI_RC hasn't path..."
-elif [ ! -e "${WEDI_RC}" ]; then	# If not exist path $WEDI_RC
-   echo "Wedi has set path, but invalid...Creating path.." >&2
-   x="`dirname $WEDI_RC`"
-   if [ ! -d $x ]; then   #If file without last word doesn't exist and it's folder
-      mkdir $x
-      touch $x/${WEDI_RC##*/}
-   else
-      touch $x/${WEDI_RC##*/} 
-   fi
-fi
 
 #--------------------------------------------
 [ -d "$file" ] && echo "I'm folder"
