@@ -4,6 +4,16 @@ ed=""
 file=""
 date=""
 
+#---------------Error----------------#
+error () {
+   echo "$1" >&2
+   exit	-1
+}
+
+#----------------Initialize---------------
+[ $# -eq 0 ] && error "0 parameters!!"
+[ $# -ge 4 ] && error "Too many parameters!!"
+
 
 #---------------------EDITOR---CONFIGURATION----------------#
 
@@ -31,13 +41,18 @@ elif [ ! -e "${WEDI_RC}" ]; then	# If not exist path $WEDI_RC
    fi
 fi
 
+#-----------------Read------
+read_textfile () {
+   while IFS='' read -r line; do
+	items=$(echo $line | tr " " "\n")
+	i=0
+	for item in $items ; do
+	   echo $item
+	   ((i++))
+	done
+   done < "$1"
 
-#---------------Error----------------#
-error () {
-   echo "$1" >&2
-   exit	-1
 }
-
 
 #------------------Function--Open-file-------
 open_file_editor () { 
@@ -47,25 +62,11 @@ open_file_editor () {
       error "File didn't exist !!"
    fi
 }
- 
-#---------------Read--From--Text--File--------
-read_textfile () {
-   while IFS='' read -r line ; do
-     items=$(echo $line | tr " " "\n")
-     i=0
-     for item in $items ; do
-	echo $ite
-	((i++))
-     done
-   done < "$1"
-
-}
 
 #---------------Write--WEDI_RC---Configuration-------
 write_log () {		#if WEDI_RC contains the same file
-if grep -qi `readlink -f ${1}` $WEDI_RC; then
-   echo success
-  # str="`readlink -f ${1}` `date "+%y%m%d"` ${s##* }" 
+if grep -qi `readlink -f $1` $WEDI_RC; then
+ str="`readlink -f ${1}` `date "+%y%m%d"` ${s##* }" 
 else
   echo "Unsuccess"
   str="`readlink -f ${1}` `date "+%y%m%d"` 1"
@@ -114,8 +115,6 @@ par_EQ3 () {
 
 #---------------CASE----------
 case $# in
-    0) error "0 parameters !!"
-	;;
     1) arg1=${1}
        par_EQ1
 	;;
@@ -127,8 +126,6 @@ case $# in
        arg2=${2}
        arg3=${3}
        par_EQ3
-	;;
-    *) error "Too many parameters !!"
 	;;
 esac
 
