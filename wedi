@@ -62,6 +62,7 @@ open_file_editor () {
       error "File didn't exist !!"
    fi
 }
+
 #-------------Append--------
 append_log () {
  if [ -s $1 ]; then 		#if $1 is not empty
@@ -74,19 +75,23 @@ append_log () {
 write_log () {		#if WEDI_RC contains the same file
 if grep -qi `readlink -f $1` $WEDI_RC; then
    echo "Success"
-   tmp=$(grep `readlink -f $1` $WEDI_RC)
-   sgrep=$(grep -o "^\S\+" <<< $tmp)
-   cntGrep=${tmp##* }
-   ((cntGrep++)) 
-   str="`readlink -f ${1}` `date "+%y%m%d"` ${cntGrep}"
-   echo "a=$sgrep"
-   echo "b=$str"
-   sed -i 's/$sgrep.*/$str/g' $WEDI_RC
-  # append_log $str
+   tmp=$(grep `readlink -f $1` $WEDI_RC)  	#Full record
+   echo "TMP:$tmp"
+  # sgrep=`echo $tmp | grep -o -n -E '^\S\+'` 
+      sgrep=$(grep -o -n "^\S\+" <<< $tmp)		#Only path with index
+   echo "SGREP: $sgrep"
+
+numLine=`echo $sgrep | grep -o -E '^\s*[0-9]+'` #Number line
+  echo "num: $numLine"
+   cntGrep=${tmp##* }				#Count edit
+   ((cntGrep++))
+   sed -i "$((numLine))d" $WEDI_RC 
+   str="`readlink -f ${1}` `date "+%y%m%d"` ${cntGrep}" #New record
+   append_log $str
 else
    echo "Unsuccess"
    str="`readlink -f ${1}` `date "+%y%m%d"` 1"
-   append_log $str
+    append_log $str
 fi
 }
 
@@ -106,7 +111,7 @@ par_EQ2 () {
 	read_textfile $WEDI_RC
 	;;
     -l) file=${arg2}
-       #	write_log $file
+       	write_log $file
 	;;
      *) error "Invalid parameters. Use --help" 
 	 ;;
