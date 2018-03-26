@@ -57,7 +57,8 @@ read_textfile () {
 #------------------Function--Open-file-------
 open_file_editor () { 
    if [ -f $file ]; then
-      $ed $file 
+      $ed $file
+      lastFile=$file 
    else
       error "File didn't exist !!"
    fi
@@ -74,22 +75,14 @@ append_log () {
 #---------------Write--WEDI_RC---Configuration-------
 write_log () {		#if WEDI_RC contains the same file
 if grep -qi `readlink -f $1` $WEDI_RC; then
-   echo "Success"
-   tmp=$(grep `readlink -f $1` $WEDI_RC)  	#Full record
-   echo "TMP:$tmp"
-  # sgrep=`echo $tmp | grep -o -n -E '^\S\+'` 
-      sgrep=$(grep -o -n "^\S\+" <<< $tmp)		#Only path with index
-   echo "SGREP: $sgrep"
-
-numLine=`echo $sgrep | grep -o -E '^\s*[0-9]+'` #Number line
-  echo "num: $numLine"
+   tmp=$(grep -n `readlink -f $1` $WEDI_RC)  	#Full record
+   numLine=`echo $tmp | grep -o -E '^\s*[0-9]+'` #Number line
    cntGrep=${tmp##* }				#Count edit
    ((cntGrep++))
    sed -i "$((numLine))d" $WEDI_RC 
    str="`readlink -f ${1}` `date "+%y%m%d"` ${cntGrep}" #New record
    append_log $str
 else
-   echo "Unsuccess"
    str="`readlink -f ${1}` `date "+%y%m%d"` 1"
     append_log $str
 fi
@@ -101,7 +94,8 @@ par_EQ1 () {
      file=${arg1}
      open_file_editor
      write_log $file
- # elif [ -d ${arg1} ]; then
+  elif [ -d ${arg1} ]; then
+	
   fi
 }
 
