@@ -11,7 +11,10 @@ error () {
 }
 
 #----------------Initialize---------------
-[ $# -eq 0 ] && error "0 parameters!!"
+if [ $# -eq 0 ]; then
+   directory=`pwd`
+   choose_file $directory
+fi
 [ $# -ge 4 ] && error "Too many parameters!!"
 
 
@@ -93,7 +96,7 @@ fi
 #-----------------Chose--file------------------
 choose_file () {
   if [ -d ${1} ]; then
-  
+     chsFile="sd"
 
   fi
 
@@ -106,8 +109,17 @@ par_EQ1 () {
      file=${arg1}
      open_file_editor
      write_log $file
-  elif [ -d ${arg1} ]; then
-	
+  else
+     case ${arg1} in
+       -m) directory=$arg1
+	   choose_file $directory
+	   ;;
+       -l) directory=$arg1
+	   choose_file $directory
+	   ;;
+        *) error "Invalid parameters. Use --help" 
+	   ;;
+     esac	
   fi
 }
 
@@ -119,6 +131,14 @@ par_EQ2 () {
     -l) file=${arg2}
        	write_log $file
 	;;
+    -a) directory=`pwd`
+	choose_file $directory
+	date=$arg2
+	;;
+    -b) directory=`pwd`
+	choose_file $directory
+	date=$arg2
+	;;
      *) error "Invalid parameters. Use --help" 
 	 ;;
    esac
@@ -126,9 +146,11 @@ par_EQ2 () {
 
 par_EQ3 () {
    case ${arg1} in
-    -a) file=$arg3
+    -a) directory=$arg3
+	choose_file $directory
 	;;
-    -b) file=$arg3
+    -b) directory=$arg3
+	choose_file $directory
 	;;
      *) error "Invalid parameters. Use --help" 
  	;;
