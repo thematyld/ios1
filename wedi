@@ -79,7 +79,7 @@ append_log () {
 
 #---------------Write--WEDI_RC---Configuration-------
 write_log () {		#if WEDI_RC contains the same file
-if  grep -qi `readlink -f $1` $WEDI_RC ; then
+if grep -qi `readlink -f $1` $WEDI_RC ; then
    tmp=$(grep -n `readlink -f $1` $WEDI_RC)  	#Full record
    numLine=`echo $tmp | grep -o -E '^\s*[0-9]+'` #Number line
    cntGrep=${tmp##* }				#Count edit
@@ -96,11 +96,12 @@ fi
 
 #----------------Directory--listing---------
 dir_listing () {
-   if grep -qi $directory $WEDI_RC ; then
-      echo "JEDE TO!!"
-
+   if grep -qi $1 $WEDI_RC ; then
+      s=$(grep -n `readlink -f $1` $WEDI_RC)
+      echo "$s"
+   else
+      error "None of the files wasn't edit..."
    fi  
-
 }
 
 #----------------Choose--file--most--often-----
@@ -142,8 +143,8 @@ par_EQ1 () {
        -m) directory=`pwd`
 	   choose_file $directory
 	   ;;
-	   -l) directory=`pwd`
-	   choose_file $directory
+       -l) directory=`pwd`
+	   dir_listing $directory
 	   ;;
         *) error "Invalid parameters. Use --help" 
 	   ;;
@@ -156,8 +157,8 @@ par_EQ2 () {
     -m) file=${arg2}
 	read_textfile $WEDI_RC
 	;;
-    -l) file=${arg2}
-       	write_log $file
+    -l) directory=${arg2}
+        dir_listing $directory	
 	;;
     -a) directory=`pwd`
 	choose_file $directory
