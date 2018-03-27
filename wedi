@@ -29,13 +29,12 @@ elif [ ! -e "${WEDI_RC}" ]; then	# If not exist path $WEDI_RC
 fi
 
 #-----------------Choose--file------------------
-choose_file () {
+	choose_file () {                                   #TODO
   if [ -d ${1} ]; then
 	echo "ANO"
-    # if  grep -qi $directory $WEDI_RC ; then
-    #    count=`echo`	
-    # fi
-     count=$(grep $directory $WEDI_RC | wc -l)
+	    str=`dirname $(grep -Eo '^\S*[^ ]+' $WEDI_RC)`  
+     count=$(grep -w $directory $str | wc -l)
+     echo "str: $str"
      echo "count: $count"
   else
      error "NONE file for editing!!"
