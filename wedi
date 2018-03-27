@@ -28,14 +28,61 @@ elif [ ! -e "${WEDI_RC}" ]; then	# If not exist path $WEDI_RC
    fi
 fi
 
+#-------------Append--------
+append_log () {
+ if [ -s $1 ]; then 		#if $1 is not empty
+     echo $str >> $WEDI_RC
+   else
+     echo $str > $WEDI_RC
+ fi
+}
+
+#---------------Write--WEDI_RC---Configuration-------
+write_log () {		#if WEDI_RC contains the same file
+if grep -qi `readlink -f $1` $WEDI_RC ; then
+   tmp=$(grep -n `readlink -f $1` $WEDI_RC)  	#Full record
+   numLine=`echo $tmp | grep -o -E '^\s*[0-9]+'` #Number line
+   cntGrep=${tmp##* }				#Count edit
+   ((cntGrep++))
+   sed -i "$((numLine))d" $WEDI_RC 
+   str="`readlink -f ${1}` `date "+%y%m%d"` ${cntGrep}" #New record
+   append_log $str
+else
+   str="`readlink -f ${1}` `date "+%y%m%d"` 1"
+   append_log $str
+fi
+}
+
+#------------------Function--Open-file-------
+open_file_editor () { 
+   if [ -f $file ]; then
+      $ed $file
+      write_log $file 
+   else
+      error "File didn't exist !!"
+   fi
+}
+
+
 #-----------------Choose--file------------------
 choose_file () {                               
   if [ -d ${1} ]; then
-	echo "ANO"
-     str=$(grep -Eo '^\s*\S+\/' $WEDI_RC)  
-	   #  count=$(grep -w "$directory" "$str" )
-	     echo "count: $count"
-     echo "str:$str"
+	echo "ANO" 
+    files=$(find $1 -maxdepth 1 -type f)                 
+    items=$(grep "$files" $WEDI_RC)
+    count=$(grep "$files" $WEDI_RC | wc -l)
+    
+    if [ $((count)) -gt 1 ]; then
+		last=$(grep "$files" $WEDI_RC | tail -1) 
+# 	open_file_editor
+		echo $last
+    else
+	last=$(grep "$files" $WEDI_RC | tail -1) 
+	open_file_editor $last
+    fi
+    echo "fles: $files"
+    echo "items: $items"
+	echo "count:$count "
   else
      error "NONE file for editing!!"
   fi
@@ -73,42 +120,6 @@ read_textfile () {
    done < "$1"
 
 }
-
-#-------------Append--------
-append_log () {
- if [ -s $1 ]; then 		#if $1 is not empty
-     echo $str >> $WEDI_RC
-   else
-     echo $str > $WEDI_RC
- fi
-}
-
-#---------------Write--WEDI_RC---Configuration-------
-write_log () {		#if WEDI_RC contains the same file
-if grep -qi `readlink -f $1` $WEDI_RC ; then
-   tmp=$(grep -n `readlink -f $1` $WEDI_RC)  	#Full record
-   numLine=`echo $tmp | grep -o -E '^\s*[0-9]+'` #Number line
-   cntGrep=${tmp##* }				#Count edit
-   ((cntGrep++))
-   sed -i "$((numLine))d" $WEDI_RC 
-   str="`readlink -f ${1}` `date "+%y%m%d"` ${cntGrep}" #New record
-   append_log $str
-else
-   str="`readlink -f ${1}` `date "+%y%m%d"` 1"
-   append_log $str
-fi
-}
-
-#------------------Function--Open-file-------
-open_file_editor () { 
-   if [ -f $file ]; then
-      $ed $file
-      write_log $file 
-   else
-      error "File didn't exist !!"
-   fi
-}
-
 #----------------Directory--listing---------
 dir_listing () {
    if grep -qi $1 $WEDI_RC ; then
