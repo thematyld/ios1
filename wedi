@@ -1,6 +1,6 @@
 #!/bin/bash
 POSIXLY_CORRECT=yes
-ed=""
+  ed=""
 file=""
 date=""
 
@@ -34,7 +34,7 @@ fi
 if [[ -z "${WEDI_RC}" ]]; then 
    error "WEDI_RC hasn't path..."
 elif [ ! -e "${WEDI_RC}" ]; then	# If not exist path $WEDI_RC
-   echo "Wedi has set path, but invalid...Creating path.." >&2
+   echo "WEDI_RC has set path, but invalid...Creating path.." >&2
    x="`dirname $WEDI_RC`"
    if [ ! -d $x ]; then   #If file without last word doesn't exist and it's folder
       mkdir $x
@@ -96,8 +96,12 @@ fi
 #-----------------Chose--file------------------
 choose_file () {
   if [ -d ${1} ]; then
+	echo "ANO"
+     if grep -qi $directory $WEDI_RC; then
+        echo "ano"
+	
+     fi
      chsFile="sd"
-
   fi
 
 }
@@ -109,12 +113,15 @@ par_EQ1 () {
      file=${arg1}
      open_file_editor
      write_log $file
+  elif [ -d $arg1 ]; then
+     directory=$arg1
+     choose_file $directory
   else
      case ${arg1} in
-       -m) directory=$arg1
+       -m) directory=`pwd`
 	   choose_file $directory
 	   ;;
-       -l) directory=$arg1
+	   -l) directory=`pwd`
 	   choose_file $directory
 	   ;;
         *) error "Invalid parameters. Use --help" 
