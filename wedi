@@ -11,6 +11,38 @@ error () {
    exit	-1
 }
 
+
+#-------------------------------------WEDI_RC---Variable----------------------#
+
+# If non initialize variable WEDI_RC 
+if [[ -z "${WEDI_RC}" ]]; then 
+   error "WEDI_RC hasn't path..."
+elif [ ! -e "${WEDI_RC}" ]; then	# If not exist path $WEDI_RC
+   echo "WEDI_RC has set path, but invalid...Creating path.." >&2
+   x="`dirname $WEDI_RC`"
+   if [ ! -d $x ]; then   #If file without last word doesn't exist and it's folder
+      mkdir $x
+      touch $x/${WEDI_RC##*/}
+   else
+      touch $x/${WEDI_RC##*/} 
+   fi
+fi
+
+#-----------------Choose--file------------------
+choose_file () {
+  if [ -d ${1} ]; then
+	echo "ANO"
+    # if  grep -qi $directory $WEDI_RC ; then
+    #    count=`echo`	
+    # fi
+     count=$(grep $directory $WEDI_RC | wc -l)
+     echo "count: $count"
+  else
+     error "NONE file for editing!!"
+  fi
+
+}
+
 #----------------Initialize---------------
 if [ $# -eq 0 ]; then
    directory=`pwd`
@@ -29,21 +61,6 @@ else
   ed=vi
 fi
 
-#-------------------------------------WEDI_RC---Variable----------------------#
-
-# If non initialize variable WEDI_RC 
-if [[ -z "${WEDI_RC}" ]]; then 
-   error "WEDI_RC hasn't path..."
-elif [ ! -e "${WEDI_RC}" ]; then	# If not exist path $WEDI_RC
-   echo "WEDI_RC has set path, but invalid...Creating path.." >&2
-   x="`dirname $WEDI_RC`"
-   if [ ! -d $x ]; then   #If file without last word doesn't exist and it's folder
-      mkdir $x
-      touch $x/${WEDI_RC##*/}
-   else
-      touch $x/${WEDI_RC##*/} 
-   fi
-fi
 
 #-----------------Read------
 read_textfile () {
@@ -56,16 +73,6 @@ read_textfile () {
 	done
    done < "$1"
 
-}
-
-#------------------Function--Open-file-------
-open_file_editor () { 
-   if [ -f $file ]; then
-      $ed $file
-      lastFile=$file 
-   else
-      error "File didn't exist !!"
-   fi
 }
 
 #-------------Append--------
@@ -93,6 +100,16 @@ else
 fi
 }
 
+#------------------Function--Open-file-------
+open_file_editor () { 
+   if [ -f $file ]; then
+      $ed $file
+      write_log $file 
+   else
+      error "File didn't exist !!"
+   fi
+}
+
 #----------------Directory--listing---------
 dir_listing () {
    if grep -qi $1 $WEDI_RC ; then
@@ -111,29 +128,11 @@ choose_often () {
 
 }
 
-
-#-----------------Choose--file------------------
-choose_file () {
-  if [ -d ${1} ]; then
-	echo "ANO"
-     if  grep -qi $directory $WEDI_RC ; then
-        echo "ano"
-	
-     fi
-     chsFile="sd"
-  else
-     error "NONE file for editing!!"
-  fi
-
-}
-
-
 #-------------------
 par_EQ1 () {
   if [ -f ${arg1} ]; then
      file=${arg1}
      open_file_editor
-     write_log $file
   elif [ -d $arg1 ]; then
      directory=$arg1
      choose_file $directory
