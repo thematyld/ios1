@@ -82,8 +82,7 @@ choose_file () {
     items=$(grep "$files" $WEDI_RC)
     count=$(grep "$files" $WEDI_RC | wc -l)
     
-    if [ "$chooseOften" = true ]; then
-      echo "ahojky"  
+    if [ "$chooseOften" = true ]; then  
       chooseOften=false
     else
        if [ $((count)) -gt 1 ]; then
@@ -91,7 +90,7 @@ choose_file () {
 	  file=$(echo $last | awk '{print $1;}')
 	  open_file_editor $file
        elif [ $((count)) -eq 0 ]; then
-	  error "NONE directory for editing!!" 
+	  error "NONE file for editing!!" 
        else
           file=$(echo $items | awk '{print $1;}')
 	  open_file_editor $file
@@ -99,7 +98,6 @@ choose_file () {
     fi
 
   else
-     echo "$1"
      error "NONE directory for editing!!"
   fi
 }
@@ -138,7 +136,7 @@ dir_listing () {
 par_EQ1 () {
   if [ -f ${arg1} ]; then
      file=${arg1}
-     open_file_editor
+     open_file_editor $file
   elif [ -d $arg1 ]; then
      directory=`readlink -f $arg1`
 	echo $directory
@@ -208,8 +206,3 @@ case $# in
        par_EQ3
 	;;
 esac
-
-#--------------------------------------------
-[ -d "$file" ] && echo "I'm folder"
-[ -f "$file" ] && echo "I'm file"
-
