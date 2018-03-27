@@ -82,8 +82,8 @@ choose_file () {
     items=$(grep "$files" $WEDI_RC)
     count=$(grep "$files" $WEDI_RC | wc -l)
     
-    if [ "$chooseOften" = true ]; then  
-      chooseOften=false
+    if [ "$chooseOften" = true ]; then
+       chooseOften=false
     else
        if [ $((count)) -gt 1 ]; then
 	  last=$(grep "$files" $WEDI_RC | tail -1) 
