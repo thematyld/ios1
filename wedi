@@ -90,7 +90,6 @@ if grep -qi `readlink -f $1` $WEDI_RC ; then
 else
    str="`readlink -f ${1}` `date "+%y%m%d"` 1"
    append_log $str
-   echo "H"
 fi
 }
 
