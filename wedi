@@ -1,8 +1,9 @@
 #!/bin/bash
 POSIXLY_CORRECT=yes
-  ed=""
+ed=""
 file=""
 date=""
+directory=""
 
 #---------------Error----------------#
 error () {
@@ -78,7 +79,7 @@ append_log () {
 
 #---------------Write--WEDI_RC---Configuration-------
 write_log () {		#if WEDI_RC contains the same file
-if grep -qi `readlink -f $1` $WEDI_RC; then
+if  grep -qi `readlink -f $1` $WEDI_RC ; then
    tmp=$(grep -n `readlink -f $1` $WEDI_RC)  	#Full record
    numLine=`echo $tmp | grep -o -E '^\s*[0-9]+'` #Number line
    cntGrep=${tmp##* }				#Count edit
@@ -93,15 +94,35 @@ else
 fi
 }
 
-#-----------------Chose--file------------------
+#----------------Directory--listing---------
+dir_listing () {
+   if grep -qi $directory $WEDI_RC ; then
+      echo "JEDE TO!!"
+
+   fi  
+
+}
+
+#----------------Choose--file--most--often-----
+choose_often () {
+   echo " Urpav"
+
+
+
+}
+
+
+#-----------------Choose--file------------------
 choose_file () {
   if [ -d ${1} ]; then
 	echo "ANO"
-     if grep -qi $directory $WEDI_RC; then
+     if  grep -qi $directory $WEDI_RC ; then
         echo "ano"
 	
      fi
      chsFile="sd"
+  else
+     error "NONE file for editing!!"
   fi
 
 }
