@@ -4,6 +4,7 @@ ed=""
 file=""
 date=""
 directory=""
+chooseOften=false
 
 #---------------Error----------------#
 error () {
@@ -73,8 +74,7 @@ open_file_editor () {
       error "File didn't exist !!"
    fi
 }
-
-
+ 
 #-----------------Choose--file------------------
 choose_file () {                               
   if [ -d ${1} ]; then
@@ -82,17 +82,24 @@ choose_file () {
     items=$(grep "$files" $WEDI_RC)
     count=$(grep "$files" $WEDI_RC | wc -l)
     
-    if [ $((count)) -gt 1 ]; then
-	last=$(grep "$files" $WEDI_RC | tail -1) 
-	file=$(echo $last | awk '{print $1;}')
-	open_file_editor $file
-    elif [ $((count)) -eq 1 ]; then
-	error "NONE directory for editing!!" 
+    if [ "$chooseOften" = true ]; then
+      echo "ahojky"  
+      chooseOften=false
     else
-        file=$(echo $items | awk '{print $1;}')
-	open_file_editor $file
+       if [ $((count)) -gt 1 ]; then
+	  last=$(grep "$files" $WEDI_RC | tail -1) 
+	  file=$(echo $last | awk '{print $1;}')
+	  open_file_editor $file
+       elif [ $((count)) -eq 0 ]; then
+	  error "NONE directory for editing!!" 
+       else
+          file=$(echo $items | awk '{print $1;}')
+	  open_file_editor $file
+       fi
     fi
+
   else
+     echo "$1"
      error "NONE directory for editing!!"
   fi
 }
@@ -127,25 +134,19 @@ dir_listing () {
    fi  
 }
 
-#----------------Choose--file--most--often-----
-choose_often () {
-   echo " Urpav"
-
-
-
-}
-
 #-------------------
 par_EQ1 () {
   if [ -f ${arg1} ]; then
      file=${arg1}
      open_file_editor
   elif [ -d $arg1 ]; then
-     directory=$arg1
+     directory=`readlink -f $arg1`
+	echo $directory
      choose_file $directory
   else
      case ${arg1} in
        -m) directory=`pwd`
+           chooseOften=true
 	   choose_file $directory
 	   ;;
        -l) directory=`pwd`
