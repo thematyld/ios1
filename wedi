@@ -11,6 +11,17 @@ error () {
    exit	-1
 }
 
+#---------------------EDITOR---CONFIGURATION----------------#
+
+if [ ! -z "${EDITOR}" ]; then
+  ed=$EDITOR
+elif [ ! -z "$VISUAL" ]; then 
+  ed=$VISUAL
+else
+  ed=vi
+fi
+
+
 
 #-------------------------------------WEDI_RC---Variable----------------------#
 
@@ -55,9 +66,9 @@ fi
 
 #------------------Function--Open-file-------
 open_file_editor () { 
-   if [ -f $file ]; then
-      $ed $file
-      write_log $file 
+   if [ -f $1 ]; then
+      $ed $1
+      write_log $1 
    else
       error "File didn't exist !!"
    fi
@@ -67,26 +78,23 @@ open_file_editor () {
 #-----------------Choose--file------------------
 choose_file () {                               
   if [ -d ${1} ]; then
-	echo "ANO" 
     files=$(find $1 -maxdepth 1 -type f)                 
     items=$(grep "$files" $WEDI_RC)
     count=$(grep "$files" $WEDI_RC | wc -l)
     
     if [ $((count)) -gt 1 ]; then
-		last=$(grep "$files" $WEDI_RC | tail -1) 
-# 	open_file_editor
-		echo $last
-    else
 	last=$(grep "$files" $WEDI_RC | tail -1) 
-	open_file_editor $last
+	file=$(echo $last | awk '{print $1;}')
+	open_file_editor $file
+    elif [ $((count)) -eq 1 ]; then
+	error "NONE directory for editing!!" 
+    else
+        file=$(echo $items | awk '{print $1;}')
+	open_file_editor $file
     fi
-    echo "fles: $files"
-    echo "items: $items"
-	echo "count:$count "
   else
-     error "NONE file for editing!!"
+     error "NONE directory for editing!!"
   fi
-
 }
 
 #----------------Initialize---------------
@@ -95,17 +103,6 @@ if [ $# -eq 0 ]; then
    choose_file $directory
 fi
 [ $# -ge 4 ] && error "Too many parameters!!"
-
-
-#---------------------EDITOR---CONFIGURATION----------------#
-
-if [ ! -z "${EDITOR}" ]; then
-  ed=$EDITOR
-elif [ ! -z "$VISUAL" ]; then 
-  ed=$VISUAL
-else
-  ed=vi
-fi
 
 
 #-----------------Read------
