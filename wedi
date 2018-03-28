@@ -1,4 +1,9 @@
 #!/bin/bash
+#Author: Martin Bartos
+#Email: thematyld@gmail.com
+#IOS project1 2017/18
+
+
 POSIXLY_CORRECT=yes
 ed=""
 file=""
@@ -7,13 +12,13 @@ directory=""
 chooseOften=false
 
 #---------------Error----------------#
-error () {
+error () {               
    echo "$1" >&2
    exit	-1
 }
 
 #---------------------EDITOR---CONFIGURATION----------------#
-
+#Set editor to open files
 if [ ! -z "${EDITOR}" ]; then
   ed=$EDITOR
 elif [ ! -z "$VISUAL" ]; then 
@@ -43,9 +48,9 @@ fi
 #-------------Append--------
 append_log () {
  if [ -s $1 ]; then 		#if $1 is not empty
-     echo $str >> $WEDI_RC
+     echo $str >> $WEDI_RC      #append
    else
-     echo $str > $WEDI_RC
+     echo $str > $WEDI_RC       #write on begin
  fi
 }
 
@@ -79,7 +84,7 @@ open_file_editor () {
 choose_file () {                               
   if [ -d ${1} ]; then
     files=$(find $1 -maxdepth 1 -type f)                 
-    items=$(grep "$files" $WEDI_RC)
+    items=$(grep "$files" $WEDI_RC)               #matches $files in WEDI/RC
     countFiles=$(grep "$files" $WEDI_RC | wc -l)
     count=$((countFiles*3)) 
     
@@ -88,7 +93,7 @@ choose_file () {
        max=0
        indx=1
 
-       while [ ! $i = $count ];do
+       while [ ! $i = $count ];do                  #Get and find maximum count open
          let "i=i+3"
          s=$(echo $items | cut -d " " -f $i)	
          if [ $((s)) -gt $max ]; then
@@ -100,8 +105,8 @@ choose_file () {
        file=$(echo $items | cut -d " " -f $indx)
        chooseOften=false
     else
-       if [ $((countFiles)) -gt 1 ]; then
-	  last=$(grep "$files" $WEDI_RC | tail -1) 
+       if [ $((countFiles)) -gt 1 ]; then          #If contains more than 1 file
+	  last=$(grep "$files" $WEDI_RC | tail -1) #End of file
 	  file=$(echo $last | awk '{print $1;}')
        elif [ $((countFiles)) -eq 0 ]; then
 	  error "NONE file for editing!!" 
@@ -121,15 +126,17 @@ choose_file () {
 }
 
 #--------------------Before_after----------
+#Function, which use a and b and find before and after the date
 by_time () {
   choose_file $1
   i=0
-  date=$(echo $2 )
+  date=`echo $2 | grep -Eo '[0-9]{2}-[0-9]{2}-[0-9]{2}'`
+  date=$(echo "${date//-}") 
   NL=$'\n'
   while [ ! $i = $count ];do
      let "i=i+3"
      dateFile=$(echo $items | cut -d " " -f $((i-1)))
-     if [ $((dateFile)) -gt $(($2)) ]; then
+     if [ $((dateFile)) -gt $(($date)) ]; then
      	stringL+=$(echo $items | cut -d " " -f $((i-2)))$NL
      else
 	stringG+=$(echo $items | cut -d " " -f $((i-2)))$NL
@@ -141,8 +148,7 @@ by_time () {
   else
      result=`echo $stringL | grep -Eo '[\w+\/]\S+'` 
   fi
-  echo $result
-  
+  echo $result 
 }
 
 #----------------Initialize---------------
@@ -152,20 +158,8 @@ if [ $# -eq 0 ]; then
 fi
 [ $# -ge 4 ] && error "Too many parameters!!"
 
-
-#-----------------Read------
-read_textfile () {
-   while IFS='' read -r line; do
-	items=$(echo $line | tr " " "\n")
-	i=0
-	for item in $items ; do
-	   echo $item
-	   ((i++))
-	done
-   done < "$1"
-
-}
 #----------------Directory--listing---------
+#LS all files edited in WEDI/Rc
 dir_listing () {
    if grep -qi $1 $WEDI_RC ; then
       s=$(grep -n `readlink -f $1` $WEDI_RC)
