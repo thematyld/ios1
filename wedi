@@ -74,12 +74,6 @@ open_file_editor () {
       error "File didn't exist !!"
    fi
 }
-
-#-------------------FInd--Maximum--------------
-find_max () {
-   echo $1
-
-}
  
 #-----------------Choose--file------------------
 choose_file () {                               
@@ -105,23 +99,42 @@ choose_file () {
 
        file=$(echo $items | cut -d " " -f $indx)
        chooseOften=false
-       open_file_editor $file
     else
        if [ $((countFiles)) -gt 1 ]; then
 	  last=$(grep "$files" $WEDI_RC | tail -1) 
 	  file=$(echo $last | awk '{print $1;}')
-	  open_file_editor $file
        elif [ $((countFiles)) -eq 0 ]; then
 	  error "NONE file for editing!!" 
        else
           file=$(echo $items | awk '{print $1;}')
-	  open_file_editor $file
        fi
     fi
 
   else
      error "NONE directory for editing!!"
   fi
+
+  if [ "$openFile" = true ]; then
+     open_file_editor $file
+     openFile=false
+  fi
+}
+
+#--------------------Before_after----------
+by_time () {
+  choose_file $1
+  i=0
+  while [ ! $i = $count ];do
+     let "i=i+3"
+     dateFile=$(echo $items | cut -d " " -f $((i-1)))
+     if [ $((dateFile)) -gt $(($2)) ]; then
+     	stringG=$(echo $items | cut -d " " -f $((i-2)))
+     else
+	stringL=$(echo $items | cut -d " " -f $((i-2)))
+     fi
+     
+     echo "date: $stringL"
+  done
 }
 
 #----------------Initialize---------------
@@ -158,15 +171,17 @@ dir_listing () {
 par_EQ1 () {
   if [ -f ${arg1} ]; then
      file=${arg1}
+     openFile=true
      open_file_editor $file
   elif [ -d $arg1 ]; then
      directory=`readlink -f $arg1`
-	echo $directory
+     openFile=true
      choose_file $directory
   else
      case ${arg1} in
        -m) directory=`pwd`
            chooseOften=true
+	   openFile=true
 	   choose_file $directory
 	   ;;
        -l) directory=`pwd`
@@ -186,13 +201,14 @@ par_EQ2 () {
     -l) directory=${arg2}
         dir_listing $directory	
 	;;
-    -a) directory=`pwd`
-	choose_file $directory
+    -a) directory=`pwd` 
 	date=$arg2
+        by_time $directory $date
 	;;
     -b) directory=`pwd`
-	choose_file $directory
 	date=$arg2
+	beforeTime=true
+	by_time $directory $date
 	;;
      *) error "Invalid parameters. Use --help" 
 	 ;;
