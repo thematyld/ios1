@@ -88,10 +88,7 @@ choose_file () {
     items=$(grep "$files" $WEDI_RC)
     countFiles=$(grep "$files" $WEDI_RC | wc -l)
     count=$((countFiles*3)) 
-   
-   
-
-
+    
     if [ "$chooseOften" = true ]; then
        i=0
        max=0
