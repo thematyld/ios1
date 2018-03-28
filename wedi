@@ -53,7 +53,7 @@ append_log () {
 write_log () {		#if WEDI_RC contains the same file
 if grep -qi `readlink -f $1` $WEDI_RC ; then
    tmp=$(grep -n `readlink -f $1` $WEDI_RC)  	#Full record
-   numLine=`echo $tmp | grep -o -E '^\s*[0-9]+'` #Number line
+   numLine=`echo $tmp | grep -Eo '^\s*[0-9]+'` #Number line
    cntGrep=${tmp##* }				#Count edit
    ((cntGrep++))
    sed -i "$((numLine))d" $WEDI_RC 
@@ -124,17 +124,25 @@ choose_file () {
 by_time () {
   choose_file $1
   i=0
+  date=$(echo $2 )
+  NL=$'\n'
   while [ ! $i = $count ];do
      let "i=i+3"
      dateFile=$(echo $items | cut -d " " -f $((i-1)))
      if [ $((dateFile)) -gt $(($2)) ]; then
-     	stringG=$(echo $items | cut -d " " -f $((i-2)))
+     	stringL+=$(echo $items | cut -d " " -f $((i-2)))$NL
      else
-	stringL=$(echo $items | cut -d " " -f $((i-2)))
+	stringG+=$(echo $items | cut -d " " -f $((i-2)))$NL
      fi
-     
-     echo "date: $stringL"
   done
+  if [ "$beforeTime" = true ]; then
+     result=`echo $stringG | grep -Eo '[\w+\/]\S+'`
+     beforeTime=false 
+  else
+     result=`echo $stringL | grep -Eo '[\w+\/]\S+'` 
+  fi
+  echo $result
+  
 }
 
 #----------------Initialize---------------
@@ -218,15 +226,17 @@ par_EQ2 () {
 par_EQ3 () {
    case ${arg1} in
     -a) directory=$arg3
-	choose_file $directory
+        date=$arg2
+	by_time $directory $date
 	;;
     -b) directory=$arg3
-	choose_file $directory
+        date=$arg2
+	beforeTime=true
+	by_time $directory $date
 	;;
      *) error "Invalid parameters. Use --help" 
  	;;
    esac
-   date=$arg2
 }
 
 #---------------CASE----------
