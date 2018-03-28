@@ -74,22 +74,47 @@ open_file_editor () {
       error "File didn't exist !!"
    fi
 }
+
+#-------------------FInd--Maximum--------------
+find_max () {
+   echo $1
+
+}
  
 #-----------------Choose--file------------------
 choose_file () {                               
   if [ -d ${1} ]; then
     files=$(find $1 -maxdepth 1 -type f)                 
     items=$(grep "$files" $WEDI_RC)
-    count=$(grep "$files" $WEDI_RC | wc -l)
-    
+    countFiles=$(grep "$files" $WEDI_RC | wc -l)
+    count=$((countFiles*3)) 
+   
+   
+
+
     if [ "$chooseOften" = true ]; then
+       i=0
+       max=0
+       indx=1
+
+       while [ ! $i = $count ];do
+         let "i=i+3"
+         s=$(echo $items | cut -d " " -f $i)	
+         if [ $((s)) -gt $max ]; then
+	   let "indx=i-2"
+	   max=$s
+         fi
+       done
+
+       file=$(echo $items | cut -d " " -f $indx)
        chooseOften=false
+       open_file_editor $file
     else
-       if [ $((count)) -gt 1 ]; then
+       if [ $((countFiles)) -gt 1 ]; then
 	  last=$(grep "$files" $WEDI_RC | tail -1) 
 	  file=$(echo $last | awk '{print $1;}')
 	  open_file_editor $file
-       elif [ $((count)) -eq 0 ]; then
+       elif [ $((countFiles)) -eq 0 ]; then
 	  error "NONE file for editing!!" 
        else
           file=$(echo $items | awk '{print $1;}')
