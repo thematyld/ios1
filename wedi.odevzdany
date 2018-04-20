@@ -1,0 +1,250 @@
+#!/bin/bash
+#Author: Martin Bartos
+#Email: thematyld@gmail.com
+#IOS project1 2017/18
+
+
+POSIXLY_CORRECT=yes
+ed=""
+file=""
+date=""
+directory=""
+chooseOften=false
+
+#---------------Error----------------#
+error () {               
+   echo "$1" >&2
+   exit	-1
+}
+
+#---------------------EDITOR---CONFIGURATION----------------#
+#Set editor to open files
+if [ ! -z "${EDITOR}" ]; then
+  ed=$EDITOR
+elif [ ! -z "$VISUAL" ]; then 
+  ed=$VISUAL
+else
+  ed=vi
+fi
+
+
+
+#-------------------------------------WEDI_RC---Variable----------------------#
+
+# If non initialize variable WEDI_RC 
+if [[ -z "${WEDI_RC}" ]]; then 
+   error "WEDI_RC hasn't path..."
+elif [ ! -e "${WEDI_RC}" ]; then	# If not exist path $WEDI_RC
+   echo "WEDI_RC has set path, but invalid...Creating path.." >&2
+   x="`dirname $WEDI_RC`"
+   if [ ! -d $x ]; then   #If file without last word doesn't exist and it's folder
+      mkdir $x
+      touch $x/${WEDI_RC##*/}
+   else
+      touch $x/${WEDI_RC##*/} 
+   fi
+fi
+
+#-------------Append--------
+append_log () {
+ if [ -s $1 ]; then 		#if $1 is not empty
+     echo $str >> $WEDI_RC      #append
+   else
+     echo $str > $WEDI_RC       #write on begin
+ fi
+}
+
+#---------------Write--WEDI_RC---Configuration-------
+write_log () {		#if WEDI_RC contains the same file
+if grep -qi `readlink -f $1` $WEDI_RC ; then
+   tmp=$(grep -n `readlink -f $1` $WEDI_RC)  	#Full record
+   numLine=`echo $tmp | grep -Eo '^\s*[0-9]+'` #Number line
+   cntGrep=${tmp##* }				#Count edit
+   ((cntGrep++))
+   sed -i "$((numLine))d" $WEDI_RC 
+   str="`readlink -f ${1}` `date "+%y%m%d"` ${cntGrep}" #New record
+   append_log $str
+else
+   str="`readlink -f ${1}` `date "+%y%m%d"` 1"
+   append_log $str
+fi
+}
+
+#------------------Function--Open-file-------
+open_file_editor () { 
+   if [ -f $1 ]; then
+      $ed $1
+      write_log $1 
+   else
+      error "File didn't exist !!"
+   fi
+}
+ 
+#-----------------Choose--file------------------
+choose_file () {                               
+  if [ -d ${1} ]; then
+    files=$(find $1 -maxdepth 1 -type f)                 
+    items=$(grep "$files" $WEDI_RC)               #matches $files in WEDI/RC
+    countFiles=$(grep "$files" $WEDI_RC | wc -l)
+    count=$((countFiles*3)) 
+    
+    if [ "$chooseOften" = true ]; then
+       i=0
+       max=0
+       indx=1
+
+       while [ ! $i = $count ];do                  #Get and find maximum count open
+         let "i=i+3"
+         s=$(echo $items | cut -d " " -f $i)	
+         if [ $((s)) -gt $max ]; then
+	   let "indx=i-2"
+	   max=$s
+         fi
+       done
+
+       file=$(echo $items | cut -d " " -f $indx)
+       chooseOften=false
+    else
+       if [ $((countFiles)) -gt 1 ]; then          #If contains more than 1 file
+	  last=$(grep "$files" $WEDI_RC | tail -1) #End of file
+	  file=$(echo $last | awk '{print $1;}')
+       elif [ $((countFiles)) -eq 0 ]; then
+	  error "NONE file for editing!!" 
+       else
+          file=$(echo $items | awk '{print $1;}')
+       fi
+    fi
+
+  else
+     error "NONE directory for editing!!"
+  fi
+
+  if [ "$openFile" = true ]; then
+     open_file_editor $file
+     openFile=false
+  fi
+}
+
+#--------------------Before_after----------
+#Function, which use a and b and find before and after the date
+by_time () {
+  choose_file $1
+  i=0
+  date=`echo $2 | grep -Eo '[0-9]{2}-[0-9]{2}-[0-9]{2}'`
+  date=$(echo "${date//-}") 
+  NL=$'\n'
+  while [ ! $i = $count ];do
+     let "i=i+3"
+     dateFile=$(echo $items | cut -d " " -f $((i-1)))
+     if [ $((dateFile)) -gt $(($date)) ]; then
+     	stringL+=$(echo $items | cut -d " " -f $((i-2)))$NL
+     else
+	stringG+=$(echo $items | cut -d " " -f $((i-2)))$NL
+     fi
+  done
+  if [ "$beforeTime" = true ]; then
+     result=`echo $stringG | grep -Eo '[\w+\/]\S+'`
+     beforeTime=false 
+  else
+     result=`echo $stringL | grep -Eo '[\w+\/]\S+'` 
+  fi
+  echo $result 
+}
+
+#----------------Initialize---------------
+if [ $# -eq 0 ]; then
+   directory=`pwd`
+   choose_file $directory
+fi
+[ $# -ge 4 ] && error "Too many parameters!!"
+
+#----------------Directory--listing---------
+#LS all files edited in WEDI/Rc
+dir_listing () {
+   if grep -qi $1 $WEDI_RC ; then
+      s=$(grep -n `readlink -f $1` $WEDI_RC)
+      echo "$s"
+   else
+      error "None of the files wasn't edit..."
+   fi  
+}
+
+#-------------------
+par_EQ1 () {
+  if [ -f ${arg1} ]; then
+     file=${arg1}
+     openFile=true
+     open_file_editor $file
+  elif [ -d $arg1 ]; then
+     directory=`readlink -f $arg1`
+     openFile=true
+     choose_file $directory
+  else
+     case ${arg1} in
+       -m) directory=`pwd`
+           chooseOften=true
+	   openFile=true
+	   choose_file $directory
+	   ;;
+       -l) directory=`pwd`
+	   dir_listing $directory
+	   ;;
+        *) error "Invalid parameters. Use --help" 
+	   ;;
+     esac	
+  fi
+}
+
+par_EQ2 () {
+   case ${arg1} in
+    -m) file=${arg2}
+	read_textfile $WEDI_RC
+	;;
+    -l) directory=${arg2}
+        dir_listing $directory	
+	;;
+    -a) directory=`pwd` 
+	date=$arg2
+        by_time $directory $date
+	;;
+    -b) directory=`pwd`
+	date=$arg2
+	beforeTime=true
+	by_time $directory $date
+	;;
+     *) error "Invalid parameters. Use --help" 
+	 ;;
+   esac
+}
+
+par_EQ3 () {
+   case ${arg1} in
+    -a) directory=$arg3
+        date=$arg2
+	by_time $directory $date
+	;;
+    -b) directory=$arg3
+        date=$arg2
+	beforeTime=true
+	by_time $directory $date
+	;;
+     *) error "Invalid parameters. Use --help" 
+ 	;;
+   esac
+}
+
+#---------------CASE----------
+case $# in
+    1) arg1=${1}
+       par_EQ1
+	;;
+    2) arg1=${1}
+       arg2=${2}
+       par_EQ2
+	;;
+    3) arg1=${1}
+       arg2=${2}
+       arg3=${3}
+       par_EQ3
+	;;
+esac
