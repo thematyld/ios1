@@ -35,7 +35,6 @@ fi
 if [[ -z "${WEDI_RC}" ]]; then 
    error "WEDI_RC hasn't path..."
 elif [ ! -e "${WEDI_RC}" ]; then	# If not exist path $WEDI_RC
-   echo "WEDI_RC has set path, but invalid...Creating path.." >&2
    x="`dirname $WEDI_RC`"
    if [ ! -d $x ]; then   #If file without last word doesn't exist and it's folder
       mkdir $x
@@ -43,6 +42,7 @@ elif [ ! -e "${WEDI_RC}" ]; then	# If not exist path $WEDI_RC
    else
       touch $x/${WEDI_RC##*/} 
    fi
+   error "WEDI_RC has set path, but invalid...Creating path.."
 fi
 
 #-------------Append--------
@@ -198,7 +198,6 @@ par_EQ1 () {
 par_EQ2 () {
    case ${arg1} in
     -m) file=${arg2}
-	read_textfile $WEDI_RC
 	;;
     -l) directory=${arg2}
         dir_listing $directory	
