@@ -1,0 +1,30 @@
+--- wedi.odevzdany	2018-04-27 01:05:50.470954345 +0200
++++ wedi	2018-04-27 02:26:20.607303331 +0200
+@@ -35,7 +35,7 @@
+ if [[ -z "${WEDI_RC}" ]]; then 
+    error "WEDI_RC hasn't path..."
+ elif [ ! -e "${WEDI_RC}" ]; then	# If not exist path $WEDI_RC
+-   echo "WEDI_RC has set path, but invalid...Creating path.." >&2
++   error "WEDI_RC has set path, but invalid...Creating path.."
+    x="`dirname $WEDI_RC`"
+    if [ ! -d $x ]; then   #If file without last word doesn't exist and it's folder
+       mkdir $x
+@@ -154,6 +154,7 @@
+ #----------------Initialize---------------
+ if [ $# -eq 0 ]; then
+    directory=`pwd`
++   openFile=true
+    choose_file $directory
+ fi
+ [ $# -ge 4 ] && error "Too many parameters!!"
+@@ -198,7 +199,9 @@
+ par_EQ2 () {
+    case ${arg1} in
+     -m) file=${arg2}
+-	read_textfile $WEDI_RC
++	chooseOften=true
++	openFile=true
++	choose_file $file
+ 	;;
+     -l) directory=${arg2}
+         dir_listing $directory	
