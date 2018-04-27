@@ -35,6 +35,7 @@ fi
 if [[ -z "${WEDI_RC}" ]]; then 
    error "WEDI_RC hasn't path..."
 elif [ ! -e "${WEDI_RC}" ]; then	# If not exist path $WEDI_RC
+   error "WEDI_RC has set path, but invalid...Creating path.."
    x="`dirname $WEDI_RC`"
    if [ ! -d $x ]; then   #If file without last word doesn't exist and it's folder
       mkdir $x
@@ -42,7 +43,6 @@ elif [ ! -e "${WEDI_RC}" ]; then	# If not exist path $WEDI_RC
    else
       touch $x/${WEDI_RC##*/} 
    fi
-   error "WEDI_RC has set path, but invalid...Creating path.."
 fi
 
 #-------------Append--------
@@ -154,6 +154,7 @@ by_time () {
 #----------------Initialize---------------
 if [ $# -eq 0 ]; then
    directory=`pwd`
+   openFile=true
    choose_file $directory
 fi
 [ $# -ge 4 ] && error "Too many parameters!!"
@@ -198,6 +199,9 @@ par_EQ1 () {
 par_EQ2 () {
    case ${arg1} in
     -m) file=${arg2}
+	chooseOften=true
+	openFile=true
+	choose_file $file
 	;;
     -l) directory=${arg2}
         dir_listing $directory	
